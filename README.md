@@ -68,7 +68,7 @@ Here's setting of hardhat
 ```
 ## Mitigation
 Using oneInch in the strategy is clever. As the market fluctuates all the time, 
-fixing one swapping route would lead to bad trades. (Check out how akward it is to do it without oneInch [sellCrv](git@github.com:Jonah246/true-fi-reentrancy-writeup.git)) However, strange things would happen when the receiver is a Vault.
+fixing one swapping route would lead to bad trades. (Check out how akward it is to do it without oneInch [sellCrv](https://github.com/Jonah246/true-fi-reentrancy-writeup/blob/main/contracts/StealCrv.sol#L107-L157) However, strange things would happen when the receiver is a Vault.
 
 Setting `sellCrv` a public function doesn't bring much benefit.
 

@@ -4,7 +4,7 @@
 [CurveYearnStrategy](https://github.com/trusttoken/smart-contracts/blob/main/contracts/truefi2/strategies/CurveYearnStrategy.sol)
 Three true-fi pools (TfUSDC, TfTUSD, TfUSDT) use the same strategy implementation. Approximately 500K worth of CRV token were at risks at the time the issue was reported.
 
-## Summary
+## Dangerous public `sellCrv`
 There's a permissionless function [sellCrv](https://github.com/trusttoken/smart-contracts/blob/76854d53c5036777286d4392495ef28cd5c5173a/contracts/truefi2/strategies/CurveYearnStrategy.sol#L228-L245) in `CurveYearnStrategy`. The `sellCrv` sells crv token into stableCoins (USDC/ USDC/ TUSD) and send it into the trueFi pool.
 
 ```solidity
@@ -28,14 +28,16 @@ There's a permissionless function [sellCrv](https://github.com/trusttoken/smart-
     }
 ```
 
+
 There are four assertions:
 1. `dstReceiver` needs to be the pool.
 2. `dstToken` needs to be the pool's token. Attackrs can not sell the CRV into strange tokens.
 3. `srcToken` needs to be CRV. Attackers can not sell other tokens.
 4. `balanceDiff >= conservativePriceEstimation(expectedGain)`.  Attackers can not sell CRV at a bad price. 
 
+The dev are aware that leaving a public function is dangeous and make a lot of assetions, however, it's not enough. 
 
-However, the contract considers it's a good trade as long as `balanceDiff` is large enough. `balanceDiff` is calculated in the OneInch library
+The contract considers it's a good trade as long as `balanceDiff` is large enough. `balanceDiff` is calculated in the OneInch library
 [OneInchExchange.sol#L59-L72](https://github.com/trusttoken/smart-contracts/blob/76854d53c5036777286d4392495ef28cd5c5173a/contracts/truefi2/libraries/OneInchExchange.sol#L59-L72). It compares `balanceOf(receiver)` before and after the swap. As long as the pool's balance increases during the swap, it's a good trade. **If the attacker joins the pool during the swap, the pool's balance increases and he can take free tfUSDC away** It turns out `oneInch` allows anyone to do their own swap. The attacker can pull the crv, do the swap and join the pool. The attacker ends up with free tfUSDC.
 
 ## Exploit steps
